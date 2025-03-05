@@ -5,7 +5,8 @@
   "require": {
     "php": "^8.0",
     "ext-json": "*",
-    "symfony/dotenv": "^6.0"
+    "symfony/dotenv": "^6.0",
+    "ext-curl": "*"
   },
   "autoload": {
     "psr-4": {
