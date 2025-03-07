@@ -17,30 +17,40 @@ class MessageHandler
     /** @var TextService Сервис для обработки текстовых сообщений */
     protected TextService $textService;
 
+    protected TelegramClient $telegramClient;
+
     /**
      * Конструктор класса.
      *
      * @param CommandService $commandService Сервис для обработки команд.
      * @param TextService $textService Сервис для обработки текстовых сообщений.
      */
-    public function __construct(CommandService $commandService, TextService $textService)
+    public function __construct(CommandService $commandService, TextService $textService, TelegramClient $telegramClient)
     {
         $this->commandService = $commandService;
         $this->textService = $textService;
+        $this->telegramClient = $telegramClient;
     }
 
     /**
      * Обрабатывает входящее сообщение.
      *
-     * @param array $messages Данные сообщения из Telegram API.
+     * @param array $message Данные сообщения из Telegram API.
      */
-    public function getMessage(array $messages): void
+    public function getMessage(array $message): void
     {
-        if (MessageHelper::isCommand($messages)) {
-            $this->commandService->get($messages);
+        if (!isset($message['message']['text'])) {
             return;
         }
 
-        $this->textService->get($messages);
+        if (MessageHelper::isCommand($message)) {
+            $response = $this->commandService->command($message);
+        } else {
+            $response = $this->textService->regionHandle($message);
+        }
+
+        $chatId = $message['message']['chat']['id'];
+        $this->telegramClient->sendMessage($chatId, $response);
     }
+
 }
